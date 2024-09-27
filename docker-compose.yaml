@@ -1,0 +1,58 @@
+version: '3.9'
+services:
+  TOY_MODEL:
+    image: datascientest/fastapi:1.0.0
+    container_name: TOY_MODEL
+    ports:
+      - "8000:8000/tcp"
+    networks:
+      toy_network:
+#         ipv4_address: 172.42.0.2
+  TOY_AUTHENTICATION:
+    image: authentication_image:latest
+    container_name: TOY_AUTHENTICATION
+    networks:
+      - toy_network
+    depends_on:
+      - TOY_MODEL
+    volumes:
+      - type: bind
+        source: ./SHARED_STORAGE
+        target: /home/SHARED_STORAGE
+    environment:
+      LOG: 1
+  TOY_AUTHORIZATION:
+    image: authorization_image:latest
+    container_name: TOY_AUTHORIZATION
+    networks:
+      - toy_network
+    depends_on:
+      - TOY_MODEL
+    volumes:
+      - type: bind
+        source: ./SHARED_STORAGE
+        target: /home/SHARED_STORAGE
+    environment:
+      LOG: 1
+  TOY_CONTENT:
+    image: content_image:latest
+    container_name: TOY_CONTENT
+    networks:
+      - toy_network
+    depends_on:
+      - TOY_MODEL
+    volumes:
+      - type: bind
+        source: ./SHARED_STORAGE
+        target: /home/SHARED_STORAGE
+    environment:
+      LOG: 1
+networks:
+  toy_network:
+    external: true
+    name: toy_network
+    driver: bridge
+    ipam:
+     config:
+     - subnet: 172.42.0.0/16
+       gateway: 172.42.0.1
